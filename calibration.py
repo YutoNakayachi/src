@@ -39,6 +39,7 @@ theta = float(args[2])
 data = pd.read_csv(title,encoding="UTF-8")
 xdata = data["ms"] 
 print(xdata.head())
+num_data = len(xdata)
 data=data.drop(data.columns[[0,1]],axis=1)
 print(data.head())
 
@@ -51,10 +52,15 @@ print(data2.head())
 print(data3.head())  
 print(data4.head()) 
 
+
+"""###############################################
+　キャリブレーションの計算
+"""
 N = len(data1["ACC_X1"]) 
 sin = math.sin(theta) 
 cos = math.cos(theta) 
 for i in range(N):
+    # CH1
     if abs(data1["ACC_X1"][i] + sin)<abs(data1["ACC_X1"][i] - sin):
         x = data1["ACC_X1"][i] + sin
     else:
@@ -68,6 +74,51 @@ for i in range(N):
     data1["ACC_X1"][i] = x * cos - z * sin 
     data1["ACC_Z1"][i] = x * sin + z * cos 
 
+    # CH2 
+
+    if abs(data2["ACC_X2"][i] + sin)<abs(data2["ACC_X2"][i] - sin):
+        x = data2["ACC_X2"][i] + sin
+    else:
+        x = data2["ACC_X2"][i] - sin 
+    
+    if abs(data2["ACC_Z2"][i] + cos ) < abs(data2["ACC_Z2"][i] - cos ):
+        z = data2["ACC_Z2"][i] + cos 
+    else:
+        z = data2["ACC_Z2"][i] - cos 
+
+    data2["ACC_X2"][i] = x * cos - z * sin 
+    data2["ACC_Z2"][i] = x * sin + z * cos 
+
+    # CH3 
+
+    if abs(data3["ACC_X3"][i] + sin)<abs(data3["ACC_X3"][i] - sin):
+        x = data3["ACC_X3"][i] + sin
+    else:
+        x = data3["ACC_X3"][i] - sin 
+    
+    if abs(data3["ACC_Z3"][i] + cos ) < abs(data3["ACC_Z3"][i] - cos ):
+        z = data3["ACC_Z3"][i] + cos 
+    else:
+        z = data3["ACC_Z3"][i] - cos 
+
+    data3["ACC_X3"][i] = x * cos - z * sin 
+    data3["ACC_Z3"][i] = x * sin + z * cos 
+
+    # CH4 
+
+    if abs(data4["ACC_X4"][i] + sin)<abs(data4["ACC_X4"][i] - sin):
+        x = data4["ACC_X4"][i] + sin
+    else:
+        x = data4["ACC_X4"][i] - sin 
+    
+    if abs(data4["ACC_Z4"][i] + cos ) < abs(data4["ACC_Z4"][i] - cos ):
+        z = data4["ACC_Z4"][i] + cos 
+    else:
+        z = data4["ACC_Z4"][i] - cos 
+
+    data4["ACC_X4"][i] = x * cos - z * sin 
+    data4["ACC_Z4"][i] = x * sin + z * cos 
+
 
 for i in range(N):
     x = data1["GYRO_X1"][i] 
@@ -76,6 +127,83 @@ for i in range(N):
     data1["GYRO_X1"][i] = x * cos - z * sin 
     data1["GYRO_Z1"][i] = x * sin + z * cos 
 
+    x = data2["GYRO_X2"][i] 
+    z = data2["GYRO_Z2"][i] 
+
+    data2["GYRO_X2"][i] = x * cos - z * sin 
+    data2["GYRO_Z2"][i] = x * sin + z * cos 
+
+    x = data3["GYRO_X3"][i] 
+    z = data3["GYRO_Z3"][i] 
+
+    data3["GYRO_X3"][i] = x * cos - z * sin 
+    data3["GYRO_Z3"][i] = x * sin + z * cos 
+
+    x = data4["GYRO_X4"][i] 
+    z = data4["GYRO_Z4"][i] 
+
+    data4["GYRO_X4"][i] = x * cos - z * sin 
+    data4["GYRO_Z4"][i] = x * sin + z * cos 
+
+
+
+"""##############################################
+"""
+
+def writeCSV():
+    global buf_f 
+    global title
+    print("Start Create CSV File") 
+    head = ["sample_cc","ms","ACC_X1","ACC_Y1","ACC_Z1","GYRO_X1","GYRO_Y1","GYRO_Z1","ACC_X2","ACC_Y2","ACC_Z2","GYRO_X2","GYRO_Y2","GYRO_Z2","ACC_X3","ACC_Y3","ACC_Z3","GYRO_X3","GYRO_Y3","GYRO_Z3","ACC_X4","ACC_Y4","ACC_Z4","GYRO_X4","GYRO_Y4","GYRO_Z4"]
+    #dt_now = datetime.datetime.now() 
+    title_float = "calibration_"+title 
+    FILE_float = open(title_float,"w",newline="")    
+    wf = csv.writer(FILE_float) 
+    wf.writerow(head) 
+    n = len(buf_f)
+    for i in range(n):
+        wf.writerow(buf_f[i]) 
+    FILE_float.close() 
+    print()
+    print(title_float+" "+"created")
+    print()
+    print("Done Create CSV File") 
+
+buf_f = [[] for i in range(num_data)]
+
+for i in range(num_data):
+    buf_f[i].append(i) 
+    buf_f[i].append(xdata[i])
+
+    buf_f[i].append(data1["ACC_X1"][i]) 
+    buf_f[i].append(data1["ACC_Y1"][i])
+    buf_f[i].append(data1["ACC_Z1"][i])
+    buf_f[i].append(data1["GYRO_X1"][i])
+    buf_f[i].append(data1["GYRO_Y1"][i])
+    buf_f[i].append(data1["GYRO_Z1"][i])
+
+    buf_f[i].append(data2["ACC_X2"][i]) 
+    buf_f[i].append(data2["ACC_Y2"][i])
+    buf_f[i].append(data2["ACC_Z2"][i])
+    buf_f[i].append(data2["GYRO_X2"][i])
+    buf_f[i].append(data2["GYRO_Y2"][i])
+    buf_f[i].append(data2["GYRO_Z2"][i])
+
+    buf_f[i].append(data3["ACC_X3"][i]) 
+    buf_f[i].append(data3["ACC_Y3"][i])
+    buf_f[i].append(data3["ACC_Z3"][i])
+    buf_f[i].append(data3["GYRO_X3"][i])
+    buf_f[i].append(data3["GYRO_Y3"][i])
+    buf_f[i].append(data3["GYRO_Z3"][i])
+
+    buf_f[i].append(data4["ACC_X4"][i]) 
+    buf_f[i].append(data4["ACC_Y4"][i])
+    buf_f[i].append(data4["ACC_Z4"][i])
+    buf_f[i].append(data4["GYRO_X4"][i])
+    buf_f[i].append(data4["GYRO_Y4"][i])
+    buf_f[i].append(data4["GYRO_Z4"][i])
+
+writeCSV()
 
 print("theta:",theta)
 print("sin:",math.sin(theta)) 
